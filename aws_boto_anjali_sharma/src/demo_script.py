@@ -26,10 +26,10 @@ print(aws_management_console.get_available_resources())
 
 
 ## Resource is available for few services, which is limited to few services, alternatively we can use client 
-# iam_console = aws_management_console.resource('iam')
+# iam_console_resource = aws_management_console.resource('iam')
 
 ## list all IAM users
-# for each_user in iam_console.users.all():
+# for each_user in iam_console_resource.users.all():
 #     print(each_user.name)
 #     print(each_user)
 
