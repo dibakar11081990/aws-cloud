@@ -8,6 +8,7 @@
 
 import boto3
 import os
+from pprint import pprint
 
 
 os.system('clear')
@@ -15,7 +16,7 @@ os.system('clear')
 ## Create AWS management console object. Also known as "Session".
 aws_management_console = boto3.session.Session(profile_name='boto3_user')
 # print(dir(aws_management_console))
-print(aws_management_console.get_available_resources())
+# print(aws_management_console.get_available_resources())
 
 # for ele in dir(aws_management_console):
 #     try:
@@ -34,7 +35,11 @@ print(aws_management_console.get_available_resources())
 #     print(each_user)
 
 ## We can alternatively use client for same, which is more generic in nature
-# iam_console_client = aws_management_console.client('iam', region_name='ap-south-1')
+iam_console_client = aws_management_console.client('iam', region_name='ap-south-1')
+
+pprint(iam_console_client.list_users())
+pprint(iam_console_client.list_users()['Users'][0]['UserName'])
+# pprint(dir(iam_console_client))
 
 # for ele in dir(iam_console_client):
 #     print(ele, end='\n')
