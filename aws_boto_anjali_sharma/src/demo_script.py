@@ -12,32 +12,32 @@ import os
 
 os.system('clear')
 
-## Create AWS console object 
-aws_mg_con = boto3.session.Session(profile_name='boto3_user')
-# print(dir(aws_mg_con))
-# print(aws_mg_con.get_available_resources())
+## Create AWS management console object. Also known as "Session".
+aws_management_console = boto3.session.Session(profile_name='boto3_user')
+# print(dir(aws_management_console))
+print(aws_management_console.get_available_resources())
 
-# for ele in dir(aws_mg_con):
+# for ele in dir(aws_management_console):
 #     try:
-#         cmd = f"aws_mg_con.{ele}()"
+#         cmd = f"aws_management_console.{ele}()"
 #         print(cmd, exec(cmd))
 #     except:
 #         continue
 
 
-## Resource is available for few services, which is limited to few services, alternatively we can use client
-# iam_con = aws_mg_con.resource('iam')
+## Resource is available for few services, which is limited to few services, alternatively we can use client 
+# iam_console = aws_management_console.resource('iam')
 
 ## list all IAM users
-# for each_user in iam_con.users.all():
+# for each_user in iam_console.users.all():
 #     print(each_user.name)
 #     print(each_user)
 
 ## We can alternatively use client for same, which is more generic in nature
-iam_con_client = aws_mg_con.client('iam', region_name='ap-south-1')
+# iam_console_client = aws_management_console.client('iam', region_name='ap-south-1')
 
-# for ele in dir(iam_con_client):
+# for ele in dir(iam_console_client):
 #     print(ele, end='\n')
 
-for each_user in iam_con_client.list_users()['Users']:
-    print(each_user['UserName'])
+# for each_user in iam_console_client.list_users()['Users']:
+#     print(each_user['UserName'])
