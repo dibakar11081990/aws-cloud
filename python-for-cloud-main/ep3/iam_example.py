@@ -15,8 +15,7 @@ def create_iam_user(user_name):
             print("Unexpected error: %s" % e)
             return False
     return response
-# responseObject = create_iam_user("SandipSimpleTest1")
-# print(responseObject)
+
 
 def list_iam_users():
     try:
@@ -32,7 +31,6 @@ def list_iam_users():
         else:
             print("Unexpected error: %s" % e)
     
-# list_iam_users()
 
 def update_iam_user(existing_user_name, new_user_name):
     try:
@@ -44,8 +42,7 @@ def update_iam_user(existing_user_name, new_user_name):
             print("Object already exists")
         else:
             print("Unexpected error: %s" % e)
-# update_iam_user("SandipTest1", "SandipTest1Renamed")
-# list_iam_users()
+
 
 def delete_iam_user(existing_user_name):
     try:
@@ -56,8 +53,6 @@ def delete_iam_user(existing_user_name):
             print("Object already exists")
         else:
             print("Unexpected error: %s" % e)
-# delete_iam_user("SandipTest1Renamed")
-# list_iam_users()
 
 
 def create_iam_policy(policy_name, policy_json):
@@ -86,7 +81,6 @@ custom_policy_json = {
             "Resource": "*"
         }]
     }
-#create_iam_policy("test_policy_1_by_sandip", custom_policy_json)
 
 
 def attach_custom_iam_policy_with_user(policy_name, user_name):
@@ -105,8 +99,6 @@ def attach_custom_iam_policy_with_user(policy_name, user_name):
         else:
             print("Unexpected error: %s" % e)
 
-# create_iam_user("sandip_poilcy_test_user_1")
-# attach_custom_iam_policy_with_user("test_policy_1_by_sandip", "sandip_poilcy_test_user_1")
 
 def attach_managed_iam_policy_with_user(policy_name, user_name):
     try:
@@ -122,7 +114,7 @@ def attach_managed_iam_policy_with_user(policy_name, user_name):
             print("Object already exists")
         else:
             print("Unexpected error: %s" % e)
-# attach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
+
 
 def detach_custom_iam_policy_with_user(policy_name, user_name):
     try:
@@ -140,7 +132,6 @@ def detach_custom_iam_policy_with_user(policy_name, user_name):
         else:
             print("Unexpected error: %s" % e)
 
-#detach_custom_iam_policy_with_user("test_policy_1_by_sandip","sandip_poilcy_test_user_1")
 
 def detach_managed_iam_policy_with_user(policy_name, user_name):
     try:
@@ -157,7 +148,6 @@ def detach_managed_iam_policy_with_user(policy_name, user_name):
         else:
             print("Unexpected error: %s" % e)
 
-#detach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
 
 def add_policy_to_role(role_name, policy_arn):
     try:
@@ -171,7 +161,8 @@ def add_policy_to_role(role_name, policy_arn):
             print("Object already exists")
         else:
             print("Unexpected error: %s" % e)
-    
+
+
 def attach_custom_iam_policy_with_role(policy_name, role_name):
     try:
         sts = boto3.client('sts')
@@ -188,6 +179,7 @@ def attach_custom_iam_policy_with_role(policy_name, role_name):
         else:
             print("Unexpected error: %s" % e)
 
+
 def create_role(role_name, trust_document):
     try:
         iam_client = boto3.client('iam')
@@ -201,3 +193,28 @@ def create_role(role_name, trust_document):
         else:
             print("Unexpected error: %s" % e)
     
+
+if __name__ == '__main__':
+
+    # responseObject = create_iam_user("SandipSimpleTest1")
+    # print(responseObject)
+
+    # list_iam_users()
+
+    # update_iam_user("SandipTest1", "SandipTest1Renamed")
+    # list_iam_users()
+
+    # delete_iam_user("SandipTest1Renamed")
+    # list_iam_users()
+
+    # create_iam_policy("test_policy_1_by_sandip", custom_policy_json)
+
+    # create_iam_user("sandip_poilcy_test_user_1")
+    # attach_custom_iam_policy_with_user("test_policy_1_by_sandip", "sandip_poilcy_test_user_1")
+
+    # attach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
+
+    # detach_custom_iam_policy_with_user("test_policy_1_by_sandip","sandip_poilcy_test_user_1")
+
+    # detach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
+

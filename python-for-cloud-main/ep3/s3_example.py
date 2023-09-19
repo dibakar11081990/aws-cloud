@@ -24,6 +24,7 @@ def create_bucket(bucket_name, region=None):
     except ClientError as e:
         logging.error(e)
         return False
+    
     return True
 
 
@@ -40,6 +41,7 @@ def list_buckets(region=None):
     except ClientError as e:
         logging.error(e)
         return False
+    
     return True
 
 
@@ -55,6 +57,7 @@ def upload_file(file_name, bucket, object_name=None):
     except ClientError as e:
         logging.error(e)
         return False
+    
     return True
 
 
@@ -71,10 +74,10 @@ def upload_file_object(file_name, bucket, object_name=None):
     except ClientError as e:
         logging.error(e)
         return False
+    
     return True
 
 
-# Create_bucket("eampty-bucket-example-sandip", region_name)
 def delete_empty_bucket(bucket_nm):
     s3_client = aws_management_console.client('s3')
     response = s3_client.delete_bucket(Bucket=bucket_nm)
@@ -105,7 +108,6 @@ def download_file(file_name, bucket, object_name):
 
 
 def download_file_object(file_name, bucket, object_name):
-
     s3_client = aws_management_console.client('s3')
     try:
         with open(file_name, "wb") as f:
@@ -117,8 +119,8 @@ def download_file_object(file_name, bucket, object_name):
 
 
 def upload_file_multipart(file_name, bucket, object_name=None):
-    # upload_file transfer to be multipart if the file size is larger than the threshold specified in the TransferConfig object.
 
+    # upload_file transfer to be multipart if the file size is larger than the threshold specified in the TransferConfig object.
     GB = 1024 ** 3
     config = TransferConfig(multipart_threshold=5*GB)
 
@@ -137,6 +139,7 @@ def upload_file_multipart(file_name, bucket, object_name=None):
 
 
 def download_file_concurrently(file_name, bucket, object_name):
+
     # default concurrency is 10
     config = TransferConfig(max_concurrency=20)
     s3_client = aws_management_console.client('s3')
@@ -151,13 +154,7 @@ def download_file_concurrently(file_name, bucket, object_name):
 def create_presigned_url(bucket, object_name, expiration=3600):
     s3_client = aws_management_console.client('s3')
     try:
-        response = s3_client.generate_presigned_url(
-            'get_object',
-            Params={
-                    'Bucket': bucket,
-                    'Key': object_name
-                    },
-            ExpiresIn=expiration)
+        response = s3_client.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': object_name}, ExpiresIn=expiration)
     except ClientError as e:
         logging.error(e)
         return None
@@ -168,14 +165,11 @@ def create_presigned_url(bucket, object_name, expiration=3600):
 def create_presigned_upload_url(bucket_name, object_name, fields=None, conditions=None, expiration=3600):
     s3_client = aws_management_console.client('s3')
     try:
-        response = s3_client.generate_presigned_post(bucket_name,
-                                                     object_name,
-                                                     Fields=fields,
-                                                     Conditions=conditions,
-                                                     ExpiresIn=expiration)
+        response = s3_client.generate_presigned_post(bucket_name, object_name, Fields=fields, Conditions=conditions, ExpiresIn=expiration)
     except ClientError as e:
         logging.error(e)
         return None
+    
     return response
 
 # uplodable_file_name = "./sample_file_3.txt"
@@ -188,21 +182,21 @@ def create_presigned_upload_url(bucket_name, object_name, fields=None, condition
 # print(f'File upload HTTP status code: {http_response.status_code}')
 
 def change_object_permission(bucket, object_name, permission):
+
     s3_client = aws_management_console.client('s3')
     try:
-        response = s3_client.put_object_acl(Bucket=bucket, 
-                  Key=object_name, 
-                  ACL=permission)
+        response = s3_client.put_object_acl(Bucket=bucket, Key=object_name, ACL=permission)
     except ClientError as e:
         logging.error(e)
         return None
+    
     return response
 
 
 
 if __name__ == '__main__':
 
-    # create_bucket(bucket_name, region_name)
+    create_bucket(bucket_name, region_name)
     # list_buckets(region_name)
     # upload_file("./sample_file_1.txt", bucket_name, "sample_file_1.txt")
     # upload_file_object("./sample_file_2.txt", bucket_name, "sample_file_2.txt")
@@ -217,4 +211,4 @@ if __name__ == '__main__':
     # responseObject = create_presigned_url(bucket_name,"sample_file_1.txt")
     # print(responseObject)
 
-    # change_object_permission(bucket_name, "sample_file_3.txt", "private")
+    # change_object_permission(bucket_name, "sample_file_3.txt", "private") # 'public-read'
