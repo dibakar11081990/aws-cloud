@@ -74,7 +74,7 @@ def upload_file_object(file_name, bucket, object_name=None):
     return True
 
 
-#create_bucket("eampty-bucket-example-sandip", region_name)
+# Create_bucket("eampty-bucket-example-sandip", region_name)
 def delete_empty_bucket(bucket_nm):
     s3_client = aws_management_console.client('s3')
     response = s3_client.delete_bucket(Bucket=bucket_nm)
@@ -105,6 +105,7 @@ def download_file(file_name, bucket, object_name):
 
 
 def download_file_object(file_name, bucket, object_name):
+
     s3_client = aws_management_console.client('s3')
     try:
         with open(file_name, "wb") as f:
@@ -116,7 +117,7 @@ def download_file_object(file_name, bucket, object_name):
 
 
 def upload_file_multipart(file_name, bucket, object_name=None):
-    #upload_file transfer to be multipart if the file size is larger than the threshold specified in the TransferConfig object.
+    # upload_file transfer to be multipart if the file size is larger than the threshold specified in the TransferConfig object.
 
     GB = 1024 ** 3
     config = TransferConfig(multipart_threshold=5*GB)
@@ -136,7 +137,7 @@ def upload_file_multipart(file_name, bucket, object_name=None):
 
 
 def download_file_concurrently(file_name, bucket, object_name):
-    #default concurrency is 10
+    # default concurrency is 10
     config = TransferConfig(max_concurrency=20)
     s3_client = aws_management_console.client('s3')
     try:
@@ -164,8 +165,7 @@ def create_presigned_url(bucket, object_name, expiration=3600):
 
 
 
-def create_presigned_upload_url(bucket_name, object_name,
-                          fields=None, conditions=None, expiration=3600):
+def create_presigned_upload_url(bucket_name, object_name, fields=None, conditions=None, expiration=3600):
     s3_client = aws_management_console.client('s3')
     try:
         response = s3_client.generate_presigned_post(bucket_name,
