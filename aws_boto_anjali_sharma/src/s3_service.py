@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from boto3.s3.transfer import TransferConfig
 import requests
 
-bucket_name = "dibakar-boto3-bucket"
+bucket_name = "dibakar20-boto3-bucket"
 region_name = "ap-south-1"
 
 aws_management_console = boto3.session.Session(profile_name='boto3_user')

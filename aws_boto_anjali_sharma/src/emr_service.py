@@ -1,0 +1,196 @@
+import boto3
+
+class boto3_EMR:
+
+    def __init__(self, **cluster_config) -> None:
+        self.aws_management_console = boto3.session.Session(profile_name='boto3_user')
+        self.emr_client = self.aws_management_console.client('emr')
+        self.cluster_config = cluster_config
+        
+
+
+    # Create the EMR client
+    def createEMRCluster(self):
+        response = self.emr_client.run_job_flow(**cluster_config)
+
+        cluster_id = response['JobFlowId']
+
+        # Print the cluster ID
+        print(cluster_id)
+
+        # Wait for the cluster to be created
+        self.emr_client.get_waiter("cluster_running").wait(ClusterId=cluster_id)
+
+        
+    # # 1. Describe Clusters: list and describe existing EMR clusters
+    def describe_clusters(self, cluster_id):
+
+        # List all EMR clusters
+        # response = self.emr_client.list_clusters(ClusterStates=['RUNNING', 'WAITING', 'TERMINATING', 'TERMINATED'])
+        # clusters = response.get('Clusters', [])
+        # print(f"all EMR Clusters: ", clusters)
+
+        # Describe a specific cluster
+        cluster_id = cluster_id
+        response = self.emr_client.describe_cluster(ClusterId=cluster_id)
+        cluster_info = response.get('Cluster')
+        print(f"cluster info for cluster_id {cluster_id}: \n {cluster_info}")
+
+
+    # # 2. Terminate Clusters: use Boto3 to terminate an existing EMR cluster:
+    # def terminate_cluster(self, cluster_id):
+    #     cluster_id = cluster_id
+    #     self.emr_client.terminate_job_flows(JobFlowIds=[cluster_id])
+    #     print(f"Cluster {cluster_id} terminated")
+
+
+    # # 3. Submit EMR Steps: submit custom steps to run on an EMR cluster. Steps can include running Hive, Spark, or custom scripts:
+    # def submitEMRSteps(self, cluster_id):
+    #     # Specify your cluster and step details
+    #     cluster_id = cluster_id
+    #     step_name = 'My EMR Step'
+    #     script_location = 's3://your-bucket/your-script.py'
+
+    #     # Submit a custom step
+    #     response = self.emr_client.add_job_flow_steps(
+    #         JobFlowId=cluster_id,
+    #         Steps=[
+    #             {
+    #                 'Name': step_name,
+    #                 'ActionOnFailure': 'CONTINUE',  # Change this to 'TERMINATE_CLUSTER' or 'CANCEL_AND_WAIT' as needed.
+    #                 'HadoopJarStep': {
+    #                     'Jar': 'command-runner.jar',
+    #                     'Args': ['spark-submit', script_location]
+    #                 }
+    #             }
+    #         ]
+    #     )
+
+
+    # # 4. List Bootstrap Actions: list the bootstrap actions that are associated with your cluster:
+    # def listBootstrapActions(self, cluster_id):
+        
+    #     cluster_id = cluster_id #'your-cluster-id'
+    #     # List bootstrap actions
+    #     response = self.emr_client.list_bootstrap_actions(ClusterId=cluster_id)
+    #     bootstrap_actions = response.get('BootstrapActions', [])
+
+
+    # # 5. Modify Cluster Configuration: modify the configuration of an existing EMR cluster:
+    # def modifyClusterConfiguration(self, cluster_id):
+    #     # Specify your cluster ID and desired configurations
+    #     cluster_id =  cluster_id #'your-cluster-id'
+    #     new_instance_count = 5  # New number of core nodes
+    #     new_instance_type = 'm5.4xlarge'  # New instance type
+
+    #     # Modify the cluster configuration
+    #     response = self.emr_client.modify_instance_fleet(
+    #         ClusterId=cluster_id,
+    #         InstanceFleet={
+    #             'InstanceFleetId': 'CORE',  # Specify 'CORE' for core nodes or 'MASTER' for the master node.
+    #             'TargetOnDemandCapacity': new_instance_count,
+    #             'TargetSpotCapacity': 0,
+    #             'InstanceTypeConfigs': [{'InstanceType': new_instance_type}]
+    #         }
+    #     )
+
+
+if __name__ == "__main__":
+
+#     # Set the cluster configuration
+    cluster_config = {
+        "Name":'test_emr_job_boto3',
+        "LogUri":"s3n://aws-logs-245491356924-ap-south-1/elasticmapreduce/",
+        "ReleaseLabel":"emr-6.12.0",
+        "ScaleDownBehavior" : "TERMINATE_AT_TASK_COMPLETION",
+        "EbsRootVolumeSize" : 15,
+        "OSReleaseLabel":"2.0.20230906.0",
+        "JobFlowRole": "emr_ec2_profile_role",
+        "ServiceRole": "arn:aws:iam::245491356924:role/emr_ec2_role",
+        "Applications":[
+                { 'Name' : 'Hadoop' },
+                { 'Name': 'Spark' },
+            ],
+        "Instances":{ 
+            "EmrManagedMasterSecurityGroup":"sg-0d86e69a6375d7375",
+            "EmrManagedSlaveSecurityGroup":"sg-0712a2eac23dc46dd",
+            "Ec2KeyName":"emr_ec2_key_pair",
+            "AdditionalMasterSecurityGroups":[],
+            "AdditionalSlaveSecurityGroups":[],
+            "Ec2SubnetId":"subnet-019f49dbe5fff18fc",
+            "TerminationProtected": False,
+            "KeepJobFlowAliveWhenNoSteps": False,
+            'InstanceGroups': [
+                {
+                    "InstanceCount":1,
+                    "Name":"Task - 1",
+                    "Market": "ON_DEMAND",
+                    "InstanceRole": "TASK",
+                    "InstanceType":"m5.xlarge",
+                    "EbsConfiguration":
+                        {"EbsBlockDeviceConfigs":
+                            [
+                                {
+                                    "VolumeSpecification":
+                                        {
+                                            "VolumeType":"gp2",
+                                            "SizeInGB":32
+                                        },
+                                    "VolumesPerInstance":2
+                                }
+                            ]
+                        }
+                },
+                {
+                    "InstanceCount":1,
+                    "Market": "ON_DEMAND",
+                    "InstanceRole": "CORE",
+                    "Name":"Core",
+                    "InstanceType":"m5.xlarge",
+                    "EbsConfiguration":
+                        {"EbsBlockDeviceConfigs":
+                            [
+                                {
+                                    "VolumeSpecification":
+                                        {
+                                            "VolumeType":"gp2",
+                                            "SizeInGB":32
+                                        },
+                                    "VolumesPerInstance":2
+                                }
+                            ]
+                        }
+                },
+                {
+                    "InstanceCount":1,
+                    "Market": "ON_DEMAND",
+                    "InstanceRole": "MASTER",
+                    "Name":"Primary",
+                    "InstanceType":"m5.xlarge",
+                    "EbsConfiguration":
+                        {"EbsBlockDeviceConfigs":
+                            [
+                                {"VolumeSpecification":
+                                    {
+                                        "VolumeType":"gp2",
+                                        "SizeInGB":32
+                                    },
+                                "VolumesPerInstance":2
+                                }
+                            ]
+                        }
+                }
+            ]}            
+        }
+
+    emr_cluster_obj = boto3_EMR(**cluster_config)
+    emr_cluster_obj.createEMRCluster()
+#     # emr_cluster_obj.describe_clusters('j-LKKGNIBIBKKH')
+
+
+    
+
+    # aws_management_console = boto3.session.Session(profile_name='boto3_user')
+    # emr_client = aws_management_console.client('emr')
+    # response = emr_client.describe_cluster(
+    # ClusterId='')
