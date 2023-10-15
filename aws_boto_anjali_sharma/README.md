@@ -76,7 +76,7 @@ aws emr create-cluster \
 
 
 
-RunJobFlow Request Syntax
+RunJobFlow Request Syntax -> https://docs.aws.amazon.com/emr/latest/APIReference/API_RunJobFlow.html#EMR-RunJobFlow-request-RepoUpgradeOnBoot
 ---------------------------------------
 
 {
