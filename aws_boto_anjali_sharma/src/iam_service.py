@@ -1,18 +1,19 @@
 import json
 import boto3
 from botocore.exceptions import ClientError
+from pprint import pprint
 
 class iamService:
 
     def __init__(self) -> None:
         self.aws_management_console = boto3.session.Session(profile_name='boto3_user')
-        self.emr_client = self.aws_management_console.client('emr')
+        self.iam_client = self.aws_management_console.client('iam')
+        self.sts = self.aws_management_console.client('sts')
 
     # Create IAM User
     def create_iam_user(self, user_name):
         try:
-            iam_client = self.emr_client.client('iam')
-            response = iam_client.create_user(UserName=user_name)
+            response = self.iam_client.create_user(UserName=user_name)
         except ClientError as e:
             if e.response['Error']['Code'] == 'EntityAlreadyExists':
                 print("Object already exists")
@@ -25,8 +26,7 @@ class iamService:
 
     def list_iam_users(self):
         try:
-            iam_client = self.emr_client.client('iam')
-            paginator = iam_client.get_paginator('list_users')
+            paginator = self.iam_client.get_paginator('list_users')
             for response in paginator.paginate():
                 #print(response["Users"])
                 for user in response["Users"]:
@@ -40,8 +40,7 @@ class iamService:
 
     def update_iam_user(self, existing_user_name, new_user_name):
         try:
-            iam_client = self.emr_client.client('iam')
-            iam_client.update_user(UserName=existing_user_name,
+            self.iam_client.update_user(UserName=existing_user_name,
                                 NewUserName=new_user_name)
         except ClientError as e:
             if e.response['Error']['Code'] == 'EntityAlreadyExists':
@@ -52,8 +51,7 @@ class iamService:
 
     def delete_iam_user(self, existing_user_name):
         try:
-            iam_client = self.emr_client.client('iam')
-            iam_client.delete_user(UserName=existing_user_name)
+            self.iam_client.delete_user(UserName=existing_user_name)
         except ClientError as e:
             if e.response['Error']['Code'] == 'EntityAlreadyExists':
                 print("Object already exists")
@@ -63,8 +61,7 @@ class iamService:
 
     def create_iam_policy(self, policy_name, policy_json):
         try:
-            iam_client = self.emr_client.client('iam')
-            iam_client.create_policy(
+            self.iam_client.create_policy(
                 PolicyName=policy_name,
                 PolicyDocument=json.dumps(policy_json)
             )
@@ -80,11 +77,9 @@ class iamService:
 
     def attach_custom_iam_policy_with_user(self,policy_name, user_name):
         try:
-            sts = self.emr_client.client('sts')
-            account_id = sts.get_caller_identity()['Account']
+            account_id = self.sts.get_caller_identity()['Account']
             policy_arn = f'arn:aws:iam::{account_id}:policy/{policy_name}'
-            iam_client = boto3.client('iam')
-            iam_client.attach_user_policy(
+            self.iam_client.attach_user_policy(
                 UserName=user_name,
                 PolicyArn=policy_arn
             )
@@ -97,10 +92,9 @@ class iamService:
 
     def attach_managed_iam_policy_with_user(self, policy_name, user_name):
         try:
-            sts = self.emr_client.client('sts')
             policy_arn = f'arn:aws:iam::aws:policy/{policy_name}'
-            iam_client = self.emr_client.client('iam')
-            iam_client.attach_user_policy(
+            
+            self.iam_client.attach_user_policy(
                 UserName=user_name,
                 PolicyArn=policy_arn
             )
@@ -113,11 +107,10 @@ class iamService:
 
     def detach_custom_iam_policy_with_user(self, policy_name, user_name):
         try:
-            sts = self.emr_client.client('sts')
-            account_id = sts.get_caller_identity()['Account']
+            account_id = self.sts.get_caller_identity()['Account']
             policy_arn = f'arn:aws:iam::{account_id}:policy/{policy_name}'
-            iam_client = self.emr_client.client('iam')
-            iam_client.detach_user_policy(
+            
+            self.iam_client.detach_user_policy(
                 UserName=user_name,
                 PolicyArn=policy_arn
             )
@@ -130,10 +123,9 @@ class iamService:
 
     def detach_managed_iam_policy_with_user(self, policy_name, user_name):
         try:
-            sts = self.emr_client.client('sts')
             policy_arn = f'arn:aws:iam::aws:policy/{policy_name}'
-            iam_client = self.emr_client.client('iam')
-            iam_client.detach_user_policy(
+
+            self.iam_client.detach_user_policy(
                 UserName=user_name,
                 PolicyArn=policy_arn
             )
@@ -143,11 +135,27 @@ class iamService:
             else:
                 print("Unexpected error: %s" % e)
 
-
-    def add_policy_to_role(self,role_name, policy_arn):
+    def create_role(self, role_nm, role_policy):
         try:
-            iam_client = self.emr_client.client('iam')
-            iam_client.attach_role_policy(
+            self.iam_client.create_role(
+                RoleName=role_nm,
+                AssumeRolePolicyDocument=json.dumps(role_policy)
+            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'EntityAlreadyExists':
+                print("Object already exists")
+                return False
+            else:
+                print("Unexpected error: %s" % e)
+                return False
+        return True
+
+    def add_policy_to_role(self,role_name, policy_name):
+        try:
+            account_id = self.sts.get_caller_identity()['Account']
+            policy_arn = f'arn:aws:iam::{account_id}:policy/{policy_name}'
+
+            self.iam_client.attach_role_policy(
             RoleName=role_name,
             PolicyArn=policy_arn
             )
@@ -160,11 +168,11 @@ class iamService:
 
     def attach_custom_iam_policy_with_role(self, policy_name, role_name):
         try:
-            sts = self.emr_client.client('sts')
-            account_id = sts.get_caller_identity()['Account']
+            
+            account_id = self.sts.get_caller_identity()['Account']
             policy_arn = f'arn:aws:iam::{account_id}:policy/{policy_name}'
-            iam_client = self.emr_client.client('iam')
-            iam_client.attach_role_policy(
+ 
+            self.iam_client.attach_role_policy(
                 RoleName=role_name,
                 PolicyArn=policy_arn
             )
@@ -174,53 +182,55 @@ class iamService:
             else:
                 print("Unexpected error: %s" % e)
 
-
-    def create_role(self, role_name, trust_document):
-        try:
-            iam_client = self.emr_client.client('iam')
-            iam_client.create_role(
-            RoleName=role_name,
-            AssumeRolePolicyDocument=json.dumps(trust_document)
-            )
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'EntityAlreadyExists':
-                print("Object already exists")
-            else:
-                print("Unexpected error: %s" % e)
     
 
 if __name__ == '__main__':
 
-    # custom_policy_json = {
-    #     "Version": "2012-10-17",
-    #     "Statement": [{
-    #         "Effect": "Allow",
-    #         "Action": [
-    #             "ec2:*"
-    #         ],
-    #         "Resource": "*"
-    #     }]
-    # }
+    custom_policy_json = {
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+                "ec2:*"
+            ],
+            "Resource": "*"
+        }]
+    }
 
-    # responseObject = create_iam_user("SandipSimpleTest1")
-    # print(responseObject)
+    assume_role_policy = {
+        "Version": "2012-10-17",
+        "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+                    "AWS": "arn:aws:iam::245491356924:user/boto3_user2"
+                },
+            "Action": "sts:AssumeRole"
+        }]
+    }
 
-    # list_iam_users()
+    iams = iamService()
+    # responseObject = iams.create_iam_user("boto3_user2")
+    # pprint(f"\n{responseObject}")
 
-    # update_iam_user("SandipTest1", "SandipTest1Renamed")
-    # list_iam_users()
+    # iams.list_iam_users()
 
-    # delete_iam_user("SandipTest1Renamed")
-    # list_iam_users()
+    # iams.update_iam_user("boto3_user2", "boto3_user3")
+    # iams.list_iam_users()
 
-    # create_iam_policy("test_policy_1_by_sandip", custom_policy_json)
+    # iams.delete_iam_user("boto3_user3")
+    # iams.list_iam_users()
 
-    # create_iam_user("sandip_poilcy_test_user_1")
-    # attach_custom_iam_policy_with_user("test_policy_1_by_sandip", "sandip_poilcy_test_user_1")
+    # iams.create_iam_policy("boto3_user2_policy", custom_policy_json)
 
-    # attach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
+    # iams.create_iam_user("boto3_user3")
+    # iams.attach_custom_iam_policy_with_user("boto3_user2_policy", "boto3_user2")
 
-    # detach_custom_iam_policy_with_user("test_policy_1_by_sandip","sandip_poilcy_test_user_1")
+    # iams.attach_managed_iam_policy_with_user("AdministratorAccess", "boto3_user2")
 
-    # detach_managed_iam_policy_with_user("AdministratorAccess", "sandip_poilcy_test_user_1")
+    # iams.detach_custom_iam_policy_with_user("boto3_user2_policy","boto3_user2")
 
+    # iams.detach_managed_iam_policy_with_user("AdministratorAccess", "boto3_user2")
+    
+    # iams.create_role('boto3_user2_role', assume_role_policy)
+    # iams.add_policy_to_role('boto3_user2_role', 'boto3_user2_policy')
+    # iams.attach_custom_iam_policy_with_role('boto3_user2_policy', 'boto3_user2_role')
