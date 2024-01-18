@@ -3,6 +3,10 @@ import boto3
 from botocore.exceptions import ClientError
 from pprint import pprint
 
+'''
+https://hands-on.cloud/boto3-iam-tutorial/#How-to-create-IAM-role
+'''
+
 class iamService:
 
     def __init__(self) -> None:
@@ -156,8 +160,8 @@ class iamService:
             policy_arn = f'arn:aws:iam::{account_id}:policy/{policy_name}'
 
             self.iam_client.attach_role_policy(
-            RoleName=role_name,
-            PolicyArn=policy_arn
+                RoleName=role_name,
+                PolicyArn=policy_arn
             )
         except ClientError as e:
             if e.response['Error']['Code'] == 'EntityAlreadyExists':
