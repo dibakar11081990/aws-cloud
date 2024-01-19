@@ -2,6 +2,9 @@ import boto3
 import logging
 from botocore.exceptions import ClientError
 
+"""
+AWS source code: https://docs.aws.amazon.com/code-library/latest/ug/python_3_glue_code_examples.html#scenarios
+"""
 class GlueWrapper:
 
     """Encapsulates AWS Glue actions."""
