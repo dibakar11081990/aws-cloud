@@ -1,0 +1,13 @@
+want to create aws project using S3, lambda,glue and cloudwatch. use python boto3 sdk. create script for creating 3 buckets: 1) input_bkt 2) output_bkt 3) glue_script_bkt
+
+create IAM role template for usecase Glue, give permission like AmazonS3FullAccess, AWSLambda_FullAccess, AWSGlueServiceRole, AWSGlueConsoleFullAccess and set Role Name as AWSPracticalLambda540
+
+
+setup glue etl job where source is S3 input_bkt which will process only new csv files only and target location is S3 bucket output_bkt contain json non-compressed files only. Set up job name 'csv_to_json' setup Role 'AWSPracticalLambda540' and Requested number of workers=2, Job bookmark=enable and Script path='s3://...glue_script_bkt'
+
+
+create Role 'AWSLambda_Role_Policies' for Lambda job and attach following policies:
+AWSLAmbdaBasicExecutionRole, AmazonS3FullAccess,AWSGlueServiceRole, AWSGlueConsoleFullAccess, AWSLambda_FullAccess
+
+
+create aws lambda function, set function name 'csv_to_json_lambda', Runtime: Python3.12, add trigger configurations: source=S3, Bucket=input_bkt, event_type=PUT, Suffix=.csv , attach Role/Permissions 'AWSLambda_Role_Policies' and this function will trigger glue job 'csv_to_json' and finally deploy it
