@@ -1,0 +1,71 @@
+# AWS Configuration
+aws:
+  region: ap-south-1
+
+# S3 Buckets Configuration
+s3:
+  buckets:
+    input:
+      name: input-bkt
+      versioning: enabled
+    output:
+      name: output-bkt
+      versioning: enabled
+    glue_script:
+      name: glue-script-bkt
+      versioning: enabled
+
+# IAM Roles Configuration
+iam:
+  glue_role:
+    name: AWS_Custom_Glue_Role_Policies
+    policies:
+      - AmazonS3FullAccess
+      - AWSLambda_FullAccess
+      - service-role/AWSGlueServiceRole
+      - AWSGlueConsoleFullAccess
+  lambda_role:
+    name: AWS_Custom_Lambda_Role_Policies
+    policies:
+      - service-role/AWSLambdaBasicExecutionRole
+      - AmazonS3FullAccess
+      - service-role/AWSGlueServiceRole
+      - AWSGlueConsoleFullAccess
+      - AWSLambda_FullAccess
+    arn: arn:aws:iam::245491356924:role/AWS_Custom_Lambda_Role_Policies
+
+# Glue Job Configuration
+glue:
+  job_name: csv_to_json
+  script_location: s3://glue-script-bkt/glue_etl_script.py
+  worker_type: G.1X
+  number_of_workers: 2
+  glue_version: '3.0'
+  python_version: '3'
+  max_concurrent_runs: 1
+  timeout_minutes: 30
+  bookmark_option: job-bookmark-enable
+  temp_dir: s3://glue-script-bkt/temporary/
+  etl_settings:
+    csv_settings:
+      header: true
+      separator: ','
+      encoding: 'utf-8'
+    json_settings:
+      compression: none
+      write_mode: append
+      partition_cols: []
+    spark_settings:
+      coalesce_size: 1
+      group_size: 1048576
+
+# Lambda Function Configuration
+lambda:
+  function_name: csv_to_json_lambda
+  runtime: python3.12
+  handler: lambda_function.lambda_handler
+  timeout: 300
+  memory_size: 128
+  trigger:
+    event_type: s3:ObjectCreated:Put
+    suffix: .csv
